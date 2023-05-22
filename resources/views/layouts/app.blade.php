@@ -26,7 +26,10 @@
         @include('partials.header')
 
         <main class="">
-            @yield('content')
+
+            <div class="container">
+                @yield('content')
+            </div>
         </main>
     </div>
 </body>
