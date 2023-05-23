@@ -3,7 +3,7 @@
 @section('page-title')
 
 @section('content')
-<form method="POST" action="{{route('admin.projects.update', ['project'=>$project->id])}}">
+<form method="POST" action="{{route('admin.projects.update', ['project'=>$project->slug])}}">
 
     @csrf
 

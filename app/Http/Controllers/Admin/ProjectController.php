@@ -5,6 +5,7 @@ use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
+use Illuminate\Support\Str; // <- da importare
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
@@ -42,10 +43,18 @@ class ProjectController extends Controller
 
 
        $form_data = $request->validated();
-        $newProject->fill($form_data);
-        $newProject->save();
+       $form_data['slug'] = Project::generateSlug($request->title);
 
-        return redirect()->route('admin.projects.show', ['project' => $newProject->id]);
+       $checkPost = Project::where('slug', $form_data['slug'])->first();
+        if ($checkPost) {
+            return back()->withInput()->withErrors(['slug' => 'Impossibile creare lo slug per questo post, cambia il titolo']);
+        }
+
+       $newProject = Project::create($form_data);
+       // $newProject->fill($form_data);
+        //$newProject->save();
+
+        return redirect()->route('admin.projects.show', ['project' => $newProject->slug])->with('status', 'Project creato con successo!');
     }
 
     /**
@@ -56,7 +65,7 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        //$projects = Project::findOrFail($id);
+        //$project = Project::findOrFail($id);
         return view('admin.projects.show', compact('project'));
     }
 
@@ -81,10 +90,15 @@ class ProjectController extends Controller
     public function update(UpdateProjectRequest $request, Project $project)
     {
         $form_data = $request->validated();
+        $form_data['slug'] = Project::generateSlug($request->title);
 
+        $checkPost = Project::where('slug', $form_data['slug'])->first();
+        if ($checkPost) {
+            return back()->withInput()->withErrors(['slug' => 'Impossibile creare lo slug per questo post, cambia il titolo']);
+        }
         $project->update($form_data);
         //return redirect()->route('pastas.show', ['pasta' => $pasta->id]);
-        return to_route('admin.projects.show', ['project' => $project->id])->with('status', 'Formato di prggetto aggiornato!');
+        return to_route('admin.projects.show', ['project' => $project->slug])->with('status', 'Formato di prggetto aggiornato!');
     }
 
     /**
